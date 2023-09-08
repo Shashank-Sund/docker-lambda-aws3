@@ -4,7 +4,7 @@ This tool is used to conduct Exploratory Data Analysis on historical stock price
 
 # Architecture
 
-![StockPriceAnalysisArchitecture drawio (1)](https://github.com/Shashank-Sund/Stock-Price-Analysis/assets/29733360/d9b78f39-9b8c-4b0d-801d-20a734f8f25e)
+![StockPriceAnalysisArchitecture drawio (2)](https://github.com/Shashank-Sund/docker-lambda-aws3/assets/29733360/cb3ad8a7-a0cc-40cf-afc1-c85786114be1)
 
 # Tools
 
