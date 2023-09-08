@@ -1,0 +1,10 @@
+alpaca-py
+numpy
+pandas
+matplotlib
+matplotlib-inline
+plotly
+seaborn
+datetime
+scikit-learn
+pybase64
