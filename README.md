@@ -1,4 +1,4 @@
-# Docker-Lambda-Aws3 Backend 
+# docker-lambda-aws3 Back-end 
 
 This tool is used to conduct Exploratory Data Analysis on historical stock price data of a given ticker, start_date, and end_date. These visualizations and plots can be used to derive ingights on market price data using the scikit-learn library. This repo also contains all of the backend code for the Dashboard application.
 
