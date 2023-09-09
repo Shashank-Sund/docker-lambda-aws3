@@ -6,13 +6,13 @@ This tool is used to conduct Exploratory Data Analysis on historical stock price
 
 ![StockPriceAnalysisArchitecture drawio (2)](https://github.com/Shashank-Sund/docker-lambda-aws3/assets/29733360/cb3ad8a7-a0cc-40cf-afc1-c85786114be1)
 
-# Tools
+# Back-End Tools
 
-AWS Tools : AWS-CDK, AWS-CLI, ECR, Cloud Formation, Lambda, S3, API Gateway, CloudFront, Route 53
+AWS Tools : AWS-CDK, AWS-CLI, ECR, Cloud Formation, Lambda
 
 Libraries: alpaca-py, pandas, matplotlib, plotly, seaborn, scikit-learn
 
-Languages: Python, Javascript
+Languages: Python, Typescript
 
 Other tools: Docker
 
