@@ -38,7 +38,7 @@ Other tools: Docker
 
 # Deploy to AWS (in terminal)
 
-  1. cd Stock-Price-Analysis
+  1. cd docker-lambda-aws3
   2. cdk bootstrap
      - bootstraps environment
   4. cdk deploy
