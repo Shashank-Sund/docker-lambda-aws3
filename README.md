@@ -66,7 +66,6 @@ Stock Market EDA - https://medium.com/mlearning-ai/exploratory-data-analysis-on-
 Alpaca API in code use - https://levelup.gitconnected.com/how-to-build-an-aws-lambda-for-algorithmic-trading-da5d6826551a
 
 Alpaca API docs - https://alpaca.markets/docs/clients/
-
                 - https://github.com/alpacahq/alpaca-py
 
 
