@@ -59,4 +59,11 @@ The `cdk.json` file tells the CDK Toolkit how to execute your app.
 * `cdk diff`        compare deployed stack with current state
 * `cdk synth`       emits the synthesized CloudFormation template
 
+# Sources
+
+Stock Market EDA - https://medium.com/mlearning-ai/exploratory-data-analysis-on-stock-market-data-5d99fbdf3b04
+Alpaca API in use - https://levelup.gitconnected.com/how-to-build-an-aws-lambda-for-algorithmic-trading-da5d6826551a
+Alpaca API free - https://alpaca.markets/docs/market-data/
+
+
    
