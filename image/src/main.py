@@ -14,6 +14,7 @@ import json
 import boto3
 import io
 import base64
+import re
 
 def handler(event, context):
 
@@ -23,8 +24,9 @@ def handler(event, context):
     symbol = event['symbol'].split(',')
     
     # converts date inputs to integers
-    startyear,startmonth,startday = int(start_date.split('-')[0]), int(start_date.split('-')[1]), int(start_date.split('-')[2])
-    endyear,endmonth,endday = int(end_date.split('-')[0]), int(end_date.split('-')[1]), int(end_date.split('-')[2])
+    pattern = r'[/-]'
+    startyear,startmonth,startday = int(re.split(pattern, start_date)[0]), int(re.split(pattern, start_date)[1]), int(re.split(pattern, start_date)[2])
+    endyear,endmonth,endday = int(re.split(pattern, end_date)[0]), int(re.split(pattern, end_date)[1]), int(re.split(pattern, end_date)[2])
 
     # No keys required for crypto data, connect to Alpaca client
     # client = StockHistoricalDataClient()
