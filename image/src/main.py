@@ -85,9 +85,9 @@ def handler(event, context):
     df = df[df['Close'] <= upper_bound]
     
     # # fits data using scaler
-    # scaler = StandardScaler()
-    # df[['Open', 'High', 'Low', 'Close', 'Volume']] = scaler.fit_transform(df[['Open', 'High', 'Low', 'Close', 'Volume']] 
-    print(df)
+    scaler = StandardScaler()
+    df[['Open', 'High', 'Low', 'Close', 'Volume']] = scaler.fit_transform(df[['Open', 'High', 'Low', 'Close', 'Volume']]) 
+    # print(df)
 
     # Initialize s3 resource
     # s3 = boto3.resource('s3')
