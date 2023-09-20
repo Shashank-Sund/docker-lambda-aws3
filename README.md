@@ -72,5 +72,8 @@ Alpaca API in code use - https://levelup.gitconnected.com/how-to-build-an-aws-la
 Alpaca API docs - https://alpaca.markets/docs/clients/
                 - https://github.com/alpacahq/alpaca-py
 
+Yfinance troubleshooting - https://stackoverflow.com/questions/76697648/python-aws-cdk-build-broke-yesterday-please-make-sure-the-libxml2-and-libxslt
+                         - https://stackoverflow.com/questions/68767280/lambda-docker-base-unable-to-install-matplotlib
+
 
    
