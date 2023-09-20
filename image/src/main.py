@@ -74,19 +74,24 @@ def handler(event, context):
         img_data = io.BytesIO()
         plt.savefig(img_data, format='png')
         # encodes message
-        encoded = base64.b64encode(img_data.getvalue()).decode('utf-8')
+        encodedsub = base64.b64encode(img_data.getvalue()).decode('utf-8')
+        encoded = "<img src=\'data:image/png;base64,{}\'>".format(encodedsub)
 
-        # Box plot of Closing Stock Prices by Year'
-        df['Year'] = [x.year for x in df['Date']]
-        sns.boxplot(x='Year', y='Close', data=df)
-        plt.title('Closing Stock Prices by Year')
-        plt.xlabel('Year')
-        plt.ylabel('Closing Stock Price')
-        # Save figure as png
-        img_data2 = io.BytesIO()
-        plt.savefig(img_data2, format='png')
-        # encodes message
-        encoded2 = base64.b64encode(img_data2.getvalue()).decode('utf-8')
+        if startyear != endyear:
+            # Box plot of Closing Stock Prices by Year'
+            df['Year'] = [x.year for x in df['Date']]
+            sns.boxplot(x='Year', y='Close', data=df)
+            plt.title('Closing Stock Prices by Year')
+            plt.xlabel('Year')
+            plt.ylabel('Closing Stock Price')
+            # Save figure as png
+            img_data2 = io.BytesIO()
+            plt.savefig(img_data2, format='png')
+            # encodes message
+            encoded2sub = base64.b64encode(img_data2.getvalue()).decode('utf-8')
+            encoded2 = "<img src=\'data:image/png;base64,{}\'>".format(encoded2sub)
+        else:
+            encoded2 = "<br>"
 
         # Create a heatmap of the correlation between stock prices
         corr = df[['Open', 'High', 'Low', 'Close']].corr()
@@ -97,7 +102,8 @@ def handler(event, context):
         img_data3 = io.BytesIO()
         plt.savefig(img_data3, format='png')
         # encodes message
-        encoded3 = base64.b64encode(img_data3.getvalue()).decode('utf-8')
+        encoded3sub = base64.b64encode(img_data3.getvalue()).decode('utf-8')
+        encoded3 = "<img src=\'data:image/png;base64,{}\'>".format(encoded3sub)
 
         # Distribution of Closing Stock Price
         plt.figure(figsize=(10, 6))
@@ -109,7 +115,8 @@ def handler(event, context):
         img_data4 = io.BytesIO()
         plt.savefig(img_data4, format='png')
         # encodes message
-        encoded4 = base64.b64encode(img_data4.getvalue()).decode('utf-8')
+        encoded4sub = base64.b64encode(img_data4.getvalue()).decode('utf-8')
+        encoded4 = "<img src=\'data:image/png;base64,{}\'>".format(encoded4sub)
 
         # Create a histogram of the daily returns
         plt.figure(figsize=(12,6))
@@ -121,7 +128,8 @@ def handler(event, context):
         img_data5 = io.BytesIO()
         plt.savefig(img_data5, format='png')
         # encodes message
-        encoded5 = base64.b64encode(img_data5.getvalue()).decode('utf-8')
+        encoded5sub = base64.b64encode(img_data5.getvalue()).decode('utf-8')
+        encoded5 = "<img src=\'data:image/png;base64,{}\'>".format(encoded5sub)
 
         html = """ <!DOCTYPE html>
     <html lang="en">
@@ -133,24 +141,24 @@ def handler(event, context):
     <body>
         <br>
         <br>
-        <img src=\'data:image/png;base64,{}\'>
+        {}
         <br>
         <br>
-        <img src=\'data:image/png;base64,{}\'>
+        {}
         <br>
         <br>
-        <img src=\'data:image/png;base64,{}\'>
+        {}
         <br>
         <br>
-        <img src=\'data:image/png;base64,{}\'>
+        {}
         <br>
         <br>
-        <img src=\'data:image/png;base64,{}\'>
+        {}
         <br>
         <br>
     </body>
     </html>
-        """.format(encoded,encoded2,encoded3,encoded4,encoded5)
+        """.format(encoded,encoded3,encoded4,encoded5,encoded2)
         
         return {
             'statusCode': 200,
@@ -174,7 +182,8 @@ def handler(event, context):
         img_data7 = io.BytesIO()
         plt.savefig(img_data7, format='png')
         # encodes message
-        encoded7 = base64.b64encode(img_data7.getvalue()).decode('utf-8')
+        encoded7sub = base64.b64encode(img_data7.getvalue()).decode('utf-8')
+        encoded7 = "<img src=\'data:image/png;base64,{}\'>".format(encoded7sub)
 
         html = """ <!DOCTYPE html>
     <html lang="en">
@@ -186,7 +195,7 @@ def handler(event, context):
     <body>
         <br>
         <br>
-        <img src=\'data:image/png;base64,{}\'>
+        {}
     </body>
     </html>
         """.format(encoded7)
