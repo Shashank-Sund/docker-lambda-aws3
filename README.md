@@ -1,10 +1,10 @@
 # docker-lambda-aws3 Back-end 
 
-This tool is used to conduct Exploratory Data Analysis on historical stock price data of a given ticker, start_date, and end_date. These visualizations and plots can be used to derive insights on market price data using the scikit-learn library. This backend code was deployed on a containerized lambda through AWS-CLI and AWS-CDK. The lambda is activated through an API Gateway url, which then takes in a json input through a post request. The json input data is then used to send an API request through the alpaca-py python library, which retrieves the data and visualizes it in various graphs through the matplotlib library. These graphs can be used to analyze and derive insights on the market price data much more effectively. 
+This tool is used to conduct Exploratory Data Analysis on historical stock price data of a given ticker, start_date, and end_date. These visualizations and plots can be used to derive insights on market price data using the scikit-learn library. This backend code was deployed on a containerized lambda through AWS-CLI and AWS-CDK. The lambda is activated through an API Gateway url, which then takes in a json input through a post request. The json input data is then used to send an API request through the yfinance python library, which retrieves the data and visualizes it in various graphs through the matplotlib library. These graphs can be used to analyze and derive insights on the market price data much more effectively. 
 
 The tool allows for both single-stock and multi-stock analysis. The current visualizations for a single stock allow the user to highlight the the closing stock prices over any given period of time, correlation between the stock prices, distribution of closing stock prices, and daily returns of the stock. For the multi-stock analysis, the user can view the closing stock price for multiple companies over time. More functionality will be added.
 
-**IMPORTANT NOTE: This visualization tool currently only supports the free version of the alpaca's stock market API in which stocks available may be limited per their API guidelines.**
+**IMPORTANT NOTE: This visualization tool may only support certain tickers in which stocks available may be limited per their library guidelines.**
 
 # Architecture
 
@@ -14,7 +14,7 @@ The tool allows for both single-stock and multi-stock analysis. The current visu
 
 AWS Tools : AWS-CDK, AWS-CLI, ECR, Cloud Formation, Lambda
 
-Libraries: alpaca-py, pandas, matplotlib, plotly, seaborn, scikit-learn
+Libraries: yfinance, pandas, matplotlib, plotly, seaborn, scikit-learn
 
 Languages: Python, Typescript
 
