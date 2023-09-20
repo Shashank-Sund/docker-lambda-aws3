@@ -8,3 +8,4 @@ seaborn
 datetime
 scikit-learn
 pybase64
+yfinance
