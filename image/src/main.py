@@ -31,7 +31,7 @@ def handler(event, context):
 
         df_list = []
         for current_symbol in symbols:
-            stock_ticker = yahooFinance.Ticker(current_symbol) # get stock ticker
+            stock_ticker = yahooFinance.Ticker(current_symbol.upper()) # get stock ticker
             df = stock_ticker.history(start=start, end=end) # get data from yahoo
 
             # gets all the timestamps, converts them to date types, puts them in a list
