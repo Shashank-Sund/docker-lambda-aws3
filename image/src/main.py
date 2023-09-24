@@ -138,25 +138,7 @@ def handler(event, context):
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>My Basic HTML Page</title>
     </head>
-    <body>
-        <br>
-        <br>
-        {}
-        <br>
-        <br>
-        {}
-        <br>
-        <br>
-        {}
-        <br>
-        <br>
-        {}
-        <br>
-        <br>
-        {}
-        <br>
-        <br>
-    </body>
+    <body>{}{}{}{}{}</body>
     </html>
         """.format(encoded,encoded3,encoded4,encoded5,encoded2)
         
@@ -192,11 +174,7 @@ def handler(event, context):
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>My Basic HTML Page</title>
     </head>
-    <body>
-        <br>
-        <br>
-        {}
-    </body>
+    <body>{}</body>
     </html>
         """.format(encoded7)
         
