@@ -60,7 +60,7 @@ scripts/smoke.sh "$(terraform -chdir=terraform/envs/staging output -raw api_url)
 
 The image tag is the git commit, so a deploy always maps to exact code, and nothing is applied without a printed plan. The first start after a new image can take over 10 seconds while Lambda fetches it; the warm-up request absorbs that.
 
-Production keeps the original API URL (the website calls it directly): `terraform/envs/prod` imports that API instead of creating one. To roll production back to the 2023 Lambda, apply prod with `-var use_legacy_lambda=true`.
+Production keeps the original API URL (the website calls it directly): `terraform/envs/prod` imports that API instead of creating one. To roll production back, deploy an earlier image: `terraform -chdir=terraform/envs/prod plan -var image_tag=<earlier commit> -out=rollback.tfplan`, then apply it. The 2023 CDK Lambda was deleted after the switch; its backup is described in `legacy-lambda/README.md`.
 
 # Sources
 
