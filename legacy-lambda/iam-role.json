@@ -1,0 +1,29 @@
+{
+    "Role": {
+        "RoleName": "DockerLambdaAws3Stack-DockerFuncServiceRole8031C1C-JH3GNVOXPVEW",
+        "Arn": "arn:aws:iam::733538815818:role/DockerLambdaAws3Stack-DockerFuncServiceRole8031C1C-JH3GNVOXPVEW",
+        "AssumeRolePolicyDocument": {
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Effect": "Allow",
+                    "Principal": {
+                        "Service": "lambda.amazonaws.com"
+                    },
+                    "Action": "sts:AssumeRole"
+                }
+            ]
+        }
+    },
+    "AttachedPolicies": [
+        {
+            "PolicyName": "AWSLambdaBasicExecutionRole",
+            "PolicyArn": "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+        },
+        {
+            "PolicyName": "AmazonS3FullAccess",
+            "PolicyArn": "arn:aws:iam::aws:policy/AmazonS3FullAccess"
+        }
+    ],
+    "InlinePolicies": []
+}
