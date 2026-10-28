@@ -1,5 +1,6 @@
 import pytest
 
+import legacy_html
 import main
 
 from conftest import images, invoke
@@ -89,10 +90,10 @@ def test_yearly_box_plot_is_drawn_on_its_own_figure(fake_yahoo, charts):
 @pytest.mark.parametrize("symbol", ["AAPL", "AAPL,MSFT"])
 def test_figures_are_closed_after_each_request(fake_yahoo, symbol):
     # A warm Lambda reuses the process, so open figures pile up across requests.
-    main.plt.close("all")
+    legacy_html.plt.close("all")
     for _ in range(3):
         invoke("2023-01-03", "2025-06-30", symbol)
-    assert main.plt.get_fignums() == []
+    assert legacy_html.plt.get_fignums() == []
 
 
 def test_tickers_are_trimmed_and_uppercased(fake_yahoo, charts):
