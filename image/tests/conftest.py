@@ -40,7 +40,13 @@ def make_history(start, end, first_close=100.0, last_close=300.0):
 class FakeTicker:
     """Stands in for yfinance.Ticker. Known symbols get data; anything else returns an empty frame."""
 
-    prices = {"AAPL": (100.0, 300.0), "MSFT": (200.0, 400.0), "BRK-A": (400000.0, 600000.0)}
+    prices = {
+        "AAPL": (100.0, 300.0),
+        "MSFT": (200.0, 400.0),
+        "GOOG": (150.0, 200.0),
+        "NVDA": (100.0, 150.0),
+        "BRK-A": (400000.0, 600000.0),
+    }
     calls = []
 
     def __init__(self, symbol):
