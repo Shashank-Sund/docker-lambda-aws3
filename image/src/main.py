@@ -74,6 +74,7 @@ def handler(event, context):
         if startyear != endyear:
             # Box plot of Closing Stock Prices by Year'
             df['Year'] = [x.year for x in df['Date']]
+            plt.figure(figsize=(10, 6))
             sns.boxplot(x='Year', y='Close', data=df)
             plt.title('Closing Stock Prices by Year')
             plt.xlabel('Year')

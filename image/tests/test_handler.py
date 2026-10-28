@@ -73,3 +73,12 @@ def test_single_ticker_keeps_a_sharp_run_up(fake_yahoo, charts, monkeypatch):
     invoke("2025-01-02", "2025-06-30", "AAPL")
     closing = next(c for c in charts if "Closing Stock Price Over Time" in c["titles"])
     assert max(closing["fig"].axes[0].lines[0].get_ydata()) > 700
+
+
+def test_yearly_box_plot_is_drawn_on_its_own_figure(fake_yahoo, charts):
+    invoke("2023-01-03", "2025-06-30", "AAPL")
+    box = next(c for c in charts if "Closing Stock Prices by Year" in c["titles"])
+    closing = next(c for c in charts if "Closing Stock Price Over Time" in c["titles"])
+    assert box["fig"] is not closing["fig"]
+    # The box plot axes should hold only box plot artists, not the daily price line.
+    assert all(len(line.get_xdata()) < 100 for line in box["fig"].axes[0].lines)
