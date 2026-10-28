@@ -3,12 +3,9 @@
 # The REST API (mgpqvaaqhh) was built by hand in 2023 and is imported, not recreated,
 # so its URL (hardcoded in the website) never changes.
 #
-# Rollout, one reviewed plan at a time (steps 1 and 2 were applied 2026-10-28):
-#   1. adopt:    image_tag = "", use_legacy_lambda = true
-#                imported the API unchanged, still calling the 2023 Lambda
-#   2. switch:   image_tag = <tested commit>, use_legacy_lambda = false
-#                created stock-eda-prod and pointed the API at it
-#   rollback:    use_legacy_lambda = true (keeps the new function, calls the old one)
+# On 2026-10-28 the API was imported unchanged, then pointed at stock-eda-prod; the 2023
+# CDK Lambda it used to call was deleted afterwards (backup: legacy-lambda/README.md).
+# Rollback: deploy an earlier image, e.g. plan with -var image_tag=<earlier commit>.
 
 terraform {
   required_version = ">= 1.10"
@@ -48,28 +45,20 @@ variable "image_tag" {
   default     = ""
 }
 
-variable "use_legacy_lambda" {
-  description = "Point the API at the 2023 CDK Lambda instead of stock-eda-prod (rollback only)."
-  type        = bool
-  default     = false
-}
-
 locals {
   api_id           = "mgpqvaaqhh"
   root_resource_id = "7s1xvram25"
-  legacy_lambda    = "arn:aws:lambda:us-east-1:733538815818:function:DockerLambdaAws3Stack-DockerFuncF47DA747-nR1zghniM75a"
 }
 
 module "backend" {
   source = "../../modules/backend"
 
-  name                   = "stock-eda-prod"
-  api_name               = "dockerlambda"
-  image_tag              = var.image_tag
-  integration_invoke_arn = var.use_legacy_lambda ? "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/${local.legacy_lambda}/invocations" : null
-  max_concurrency        = 5
-  throttle_rate          = 5
-  throttle_burst         = 10
+  name            = "stock-eda-prod"
+  api_name        = "dockerlambda"
+  image_tag       = var.image_tag
+  max_concurrency = 5
+  throttle_rate   = 5
+  throttle_burst  = 10
 }
 
 import {
