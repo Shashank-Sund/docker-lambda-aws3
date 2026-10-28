@@ -108,3 +108,62 @@ def test_trailing_commas_and_duplicates_still_mean_one_ticker(fake_yahoo, symbol
     response = invoke("2025-01-02", "2025-06-30", symbol)
     assert fake_yahoo.calls == ["AAPL"]
     assert len(images(response)) == 4  # single-ticker analysis, not a one-line comparison
+
+
+def error_text(response):
+    import re
+    match = re.search(r"<div class='eda-error' role='alert'>(.*?)</div>", response["body"])
+    return match.group(1) if match else None
+
+
+@pytest.mark.parametrize(
+    "start, end, symbol, message",
+    [
+        ("", "2025-06-30", "AAPL", "Please enter a start date, an end date and at least one ticker."),
+        ("2025-01-02", "2025-06-30", " , ", "Please enter a start date, an end date and at least one ticker."),
+        ("01-02-2025x", "2025-06-30", "AAPL", "Dates must be in YYYY-MM-DD format."),
+        ("2025-02-30", "2025-06-30", "AAPL", "Dates must be in YYYY-MM-DD format."),
+        ("2025-06-30", "2025-01-02", "AAPL", "The start date must be before the end date."),
+        ("2025-01-02", "2025-01-02", "AAPL", "The start date must be before the end date."),
+    ],
+)
+def test_bad_input_returns_a_readable_message(fake_yahoo, start, end, symbol, message):
+    response = invoke(start, end, symbol)
+    assert response["statusCode"] == 200
+    assert error_text(response) == message
+    assert images(response) == []
+
+
+def test_missing_fields_return_a_readable_message(fake_yahoo):
+    response = main.handler({}, None)
+    assert error_text(response) == "Please enter a start date, an end date and at least one ticker."
+
+
+def test_unknown_ticker_names_the_ticker(fake_yahoo):
+    response = invoke("2025-01-02", "2025-06-30", "AAPL,ZZZZ")
+    assert error_text(response) == (
+        "No data found for ZZZZ between 2025-01-02 and 2025-06-30. Check the ticker symbol and the date range."
+    )
+
+
+def test_user_input_is_html_escaped(fake_yahoo):
+    # The old website inserts the response with innerHTML, so the message must not carry markup.
+    response = invoke("2025-01-02", "2025-06-30", "<IMG SRC=X ONERROR=ALERT(1)>")
+    assert "<IMG" not in response["body"]
+    assert "&lt;IMG SRC=X ONERROR=ALERT(1)&gt;" in error_text(response)
+
+
+@pytest.mark.parametrize("end", ["2025-01-03", "2025-01-06"])
+def test_very_short_ranges_never_crash(fake_yahoo, end):
+    # One or two trading days: either charts or a readable message, never a Lambda error.
+    response = invoke("2025-01-02", end, "AAPL")
+    assert images(response) or error_text(response)
+
+
+def test_unexpected_failures_return_a_generic_message(fake_yahoo, monkeypatch):
+    def boom(self, start, end):
+        raise ConnectionError("network down")
+
+    monkeypatch.setattr(fake_yahoo, "history", boom)
+    response = invoke("2025-01-02", "2025-06-30", "AAPL")
+    assert error_text(response).startswith("Something went wrong while building the charts.")
