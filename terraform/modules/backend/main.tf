@@ -195,6 +195,18 @@ resource "aws_api_gateway_integration_response" "options_200" {
   depends_on = [aws_api_gateway_integration.options]
 }
 
+# Errors API Gateway makes itself (throttled, over the Lambda's concurrency cap, timed out)
+# skip the integration response, so without these they have no CORS header and the browser
+# reports a network failure instead of letting the page see the status.
+resource "aws_api_gateway_gateway_response" "cors" {
+  for_each      = local.api == null ? toset([]) : toset(["DEFAULT_4XX", "DEFAULT_5XX"])
+  rest_api_id   = local.api.id
+  response_type = each.key
+  response_parameters = {
+    "gatewayresponse.header.Access-Control-Allow-Origin" = local.allow_origin
+  }
+}
+
 resource "aws_api_gateway_deployment" "this" {
   count       = local.api == null ? 0 : 1
   rest_api_id = local.api.id
@@ -211,6 +223,7 @@ resource "aws_api_gateway_deployment" "this" {
       aws_api_gateway_method_response.options_200[0],
       aws_api_gateway_integration.options[0],
       aws_api_gateway_integration_response.options_200[0],
+      aws_api_gateway_gateway_response.cors,
     ]))
   }
 
