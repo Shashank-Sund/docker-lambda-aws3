@@ -37,8 +37,9 @@ def small():
 
 
 def test_daily_returns_and_total_return(small):
-    assert small["returns"]["value"] == [0.1, -0.1, pytest.approx(0.222222, abs=1e-6)]
-    assert small["returns"]["date"] == small["prices"]["date"][1:]
+    returns = metrics.daily_returns(bars([100, 110, 99, 121])["Close"])
+    assert list(returns.round(6)) == [0.1, -0.1, 0.222222]
+    assert small["returns"]["mean"] == pytest.approx((0.1 - 0.1 + 0.2222222) / 3, abs=1e-6)
     assert small["summary"]["total_return"] == pytest.approx(0.21)
 
 
@@ -109,8 +110,9 @@ def test_histogram_has_40_bins_covering_every_return():
     d = data_for(random_walk(300))
     h = d["returns"]["histogram"]
     assert len(h["counts"]) == 40 and len(h["edges"]) == 41
-    assert sum(h["counts"]) == len(d["returns"]["value"])
-    assert h["edges"][0] <= min(d["returns"]["value"]) and h["edges"][-1] >= max(d["returns"]["value"])
+    assert sum(h["counts"]) == d["summary"]["trading_days"] - 1
+    worst, best = d["summary"]["worst_day"]["return"], d["summary"]["best_day"]["return"]
+    assert h["edges"][0] == pytest.approx(worst, abs=1e-6) and h["edges"][-1] == pytest.approx(best, abs=1e-6)
 
 
 def test_moving_averages_use_history_before_start():
@@ -154,6 +156,51 @@ def test_beta_against_benchmark():
 def test_no_benchmark_means_null_beta():
     s = data_for(random_walk(50))["summary"]
     assert s["beta"] is None and s["excess_return"] is None
+
+
+def test_risk_series_align_with_prices():
+    d = data_for(random_walk(120))
+    n = len(d["prices"]["date"])
+    assert len(d["risk"]["rolling_volatility"]) == n and len(d["risk"]["drawdown"]) == n
+
+
+# ---------- weekly bars for long ranges ----------
+
+def test_weekly_bars_aggregate_each_week():
+    frame = bars([10, 12, 9, 11, 13, 14, 15, 16, 17, 18], start="2025-01-06", volume=100)  # Mon 6 Jan to Fri 17 Jan
+    frame["Open"] = frame["Close"] - 1
+    week = metrics.weekly(frame)
+    assert [d.strftime("%Y-%m-%d") for d in week.index] == ["2025-01-10", "2025-01-17"]  # last trading day of each week
+    first = week.iloc[0]
+    assert (first["Open"], first["Close"], first["Volume"]) == (9, 13, 500)
+    assert first["High"] == pytest.approx(13 * 1.01) and first["Low"] == pytest.approx(9 * 0.99)
+
+
+def test_week_ending_on_a_holiday_is_dated_by_its_last_trading_day():
+    frame = bars([10, 11, 12, 13], start="2025-04-14").drop(pd.Timestamp("2025-04-17"))  # Mon..Wed only
+    assert list(metrics.weekly(frame).index.strftime("%Y-%m-%d")) == ["2025-04-16"]
+
+
+def test_long_ranges_chart_weekly_but_compute_statistics_daily():
+    frame = random_walk(1800, start="2018-01-01")
+    start, end = "2018-06-01", "2024-06-01"
+    assert metrics.use_weekly(start, end) and not metrics.use_weekly("2020-06-01", "2025-06-01")
+    daily = metrics.ticker_data("T", frame, start, end)
+    weekly_data = metrics.ticker_data("T", frame, start, end, weekly_bars=True)
+    assert weekly_data["summary"] == daily["summary"]
+    assert weekly_data["returns"] == daily["returns"]
+    assert weekly_data["seasonality"] == daily["seasonality"]
+    n = len(weekly_data["prices"]["date"])
+    assert n < len(daily["prices"]["date"]) / 4
+    assert len(weekly_data["risk"]["drawdown"]) == n and len(weekly_data["prices"]["sma200"]) == n
+    # Chart values on a week's last day equal the daily values on that day.
+    day = weekly_data["prices"]["date"][10]
+    i = daily["prices"]["date"].index(day)
+    for key in ("close", "sma50", "sma200"):
+        assert weekly_data["prices"][key][10] == daily["prices"][key][i]
+    assert weekly_data["risk"]["drawdown"][10] == daily["risk"]["drawdown"][i]
+    assert list(metrics.chart_close(metrics.in_range(frame, start, end)["Close"], True).index.strftime("%Y-%m-%d")) \
+        == weekly_data["prices"]["date"]
 
 
 # ---------- seasonality ----------

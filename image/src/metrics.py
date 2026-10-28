@@ -13,6 +13,7 @@ TRADING_DAYS = 252
 RISK_FREE_RATE = 0.0
 HISTOGRAM_BINS = 40
 LOOKBACK_DAYS = 400  # calendar days fetched before start: enough for a 200 trading-day average
+WEEKLY_AFTER_YEARS = 5  # longer ranges send weekly bars for charts, keeping the response under 6 MB
 
 
 def clean(value, digits=6):
@@ -42,6 +43,34 @@ def daily_bars(df):
     out = df[['Open', 'High', 'Low', 'Close', 'Volume']].copy()
     out.index = pd.DatetimeIndex([pd.Timestamp(ts.date()) for ts in df.index], name='date')
     return out[~out.index.duplicated(keep='last')].sort_index()
+
+
+def use_weekly(start, end):
+    return pd.Timestamp(end) > pd.Timestamp(start) + pd.DateOffset(years=WEEKLY_AFTER_YEARS)
+
+
+def _week_end_dates(index):
+    """Each week's last trading day (weeks end on Friday)."""
+    weeks = index.to_period('W-FRI')
+    return weeks, pd.DatetimeIndex(pd.Series(index, index=index).groupby(weeks).last().to_numpy(), name='date')
+
+
+def weekly(bars):
+    """Weekly bars dated by each week's last trading day: first open, max high, min low, last close, total volume."""
+    weeks, dates = _week_end_dates(bars.index)
+    out = bars.groupby(weeks).agg({'Open': 'first', 'High': 'max', 'Low': 'min', 'Close': 'last', 'Volume': 'sum'})
+    out.index = dates
+    return out
+
+
+def chart_close(close, weekly_bars):
+    """The closes the charts use: daily, or each week's last close."""
+    if not weekly_bars:
+        return close
+    weeks, dates = _week_end_dates(close.index)
+    out = close.groupby(weeks).last()
+    out.index = dates
+    return out
 
 
 def in_range(frame, start, end):
@@ -159,8 +188,12 @@ def by_month(monthly):
     return out
 
 
-def ticker_data(symbol, history, start, end, is_benchmark=False, benchmark_returns=None, benchmark_total=None):
-    """TickerData (see docs/json-api.md) from bars that include history before start."""
+def ticker_data(symbol, history, start, end, is_benchmark=False, benchmark_returns=None, benchmark_total=None,
+                weekly_bars=False):
+    """TickerData (see docs/json-api.md) from daily bars that include history before start.
+
+    Statistics always use daily data; with weekly_bars the chart series are sampled weekly.
+    """
     close_all = history['Close']
     sma50 = close_all.rolling(50).mean()
     sma200 = close_all.rolling(200).mean()
@@ -202,32 +235,34 @@ def ticker_data(symbol, history, start, end, is_benchmark=False, benchmark_retur
     }
 
     monthly = monthly_returns(close, history.index, end)
+    chart = weekly(bars) if weekly_bars else bars
+    cidx = chart.index
     return {
         'symbol': symbol,
         'is_benchmark': is_benchmark,
         'prices': {
-            'date': days(idx),
-            'open': clean_list(bars['Open'], 4),
-            'high': clean_list(bars['High'], 4),
-            'low': clean_list(bars['Low'], 4),
-            'close': clean_list(close, 4),
-            'volume': [int(v) for v in bars['Volume']],
-            'sma50': clean_list(sma50.reindex(idx), 4),
-            'sma200': clean_list(sma200.reindex(idx), 4),
+            'date': days(cidx),
+            'open': clean_list(chart['Open'], 4),
+            'high': clean_list(chart['High'], 4),
+            'low': clean_list(chart['Low'], 4),
+            'close': clean_list(chart['Close'], 4),
+            'volume': [int(v) for v in chart['Volume']],
+            'sma50': clean_list(sma50.reindex(cidx), 4),
+            'sma200': clean_list(sma200.reindex(cidx), 4),
         },
         'summary': summary,
-        'returns': {'date': days(rets.index), 'value': clean_list(rets), **return_stats(rets)},
-        'risk': {
-            'date': days(idx),
-            'rolling_volatility': clean_list(rolling_vol.reindex(idx)),
-            'drawdown': clean_list(drawdown(close)),
+        'returns': return_stats(rets),
+        'risk': {  # aligned with prices.date
+            'rolling_volatility': clean_list(rolling_vol.reindex(cidx)),
+            'drawdown': clean_list(drawdown(close).reindex(cidx)),
         },
         'seasonality': {'monthly': monthly, 'by_month': by_month(monthly)},
     }
 
 
 def compare(closes, returns, summaries):
-    """The compare section from per-symbol in-range closes, daily returns and summaries (dicts keyed by symbol)."""
+    """The compare section, from dicts keyed by symbol: in-range closes as charted (daily or weekly),
+    daily returns, and summaries."""
     symbols = list(closes)
     frame = pd.DataFrame({s: closes[s] for s in symbols}).sort_index()
     cumulative = {s: clean_list(frame[s] / closes[s].iloc[0] - 1) for s in symbols}
