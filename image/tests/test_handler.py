@@ -1,5 +1,7 @@
 import pytest
 
+import main
+
 from conftest import images, invoke
 
 
@@ -82,3 +84,12 @@ def test_yearly_box_plot_is_drawn_on_its_own_figure(fake_yahoo, charts):
     assert box["fig"] is not closing["fig"]
     # The box plot axes should hold only box plot artists, not the daily price line.
     assert all(len(line.get_xdata()) < 100 for line in box["fig"].axes[0].lines)
+
+
+@pytest.mark.parametrize("symbol", ["AAPL", "AAPL,MSFT"])
+def test_figures_are_closed_after_each_request(fake_yahoo, symbol):
+    # A warm Lambda reuses the process, so open figures pile up across requests.
+    main.plt.close("all")
+    for _ in range(3):
+        invoke("2023-01-03", "2025-06-30", symbol)
+    assert main.plt.get_fignums() == []
