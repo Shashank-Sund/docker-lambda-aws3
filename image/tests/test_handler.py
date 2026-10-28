@@ -93,3 +93,18 @@ def test_figures_are_closed_after_each_request(fake_yahoo, symbol):
     for _ in range(3):
         invoke("2023-01-03", "2025-06-30", symbol)
     assert main.plt.get_fignums() == []
+
+
+def test_tickers_are_trimmed_and_uppercased(fake_yahoo, charts):
+    response = invoke("2025-01-02", "2025-06-30", " aapl , msft ")
+    assert fake_yahoo.calls == ["AAPL", "MSFT"]
+    assert len(images(response)) == 1
+    labels = {line.get_label() for line in charts[0]["fig"].axes[0].lines if len(line.get_ydata())}
+    assert {"AAPL", "MSFT"} <= labels
+
+
+@pytest.mark.parametrize("symbol", ["AAPL,", "AAPL,aapl", ",AAPL, "])
+def test_trailing_commas_and_duplicates_still_mean_one_ticker(fake_yahoo, symbol):
+    response = invoke("2025-01-02", "2025-06-30", symbol)
+    assert fake_yahoo.calls == ["AAPL"]
+    assert len(images(response)) == 4  # single-ticker analysis, not a one-line comparison
