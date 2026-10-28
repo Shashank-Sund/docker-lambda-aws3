@@ -6,11 +6,13 @@ import numpy as np
 import pandas as pd
 import pytest
 
-# main.py sits in image/src in the repo and in /var/task (next to tests/) in the test image.
+# The handler modules sit in image/src in the repo and in /var/task (next to tests/) in the test image.
 HERE = os.path.dirname(os.path.abspath(__file__))
 for path in (os.path.join(HERE, "..", "src"), os.path.join(HERE, "..")):
     sys.path.insert(0, os.path.abspath(path))
 
+import fetch  # noqa: E402
+import legacy_html  # noqa: E402
 import main  # noqa: E402
 
 
@@ -63,7 +65,7 @@ class FakeTicker:
 @pytest.fixture
 def fake_yahoo(monkeypatch):
     FakeTicker.calls = []
-    monkeypatch.setattr(main.yahooFinance, "Ticker", FakeTicker)
+    monkeypatch.setattr(fetch.yahooFinance, "Ticker", FakeTicker)
     return FakeTicker
 
 
@@ -71,14 +73,14 @@ def fake_yahoo(monkeypatch):
 def charts(monkeypatch):
     """Records the axes titles and plotted y values of every figure the handler saves."""
     saved = []
-    original_savefig = main.plt.savefig
+    original_savefig = legacy_html.plt.savefig
 
     def recording_savefig(*args, **kwargs):
-        fig = main.plt.gcf()
+        fig = legacy_html.plt.gcf()
         saved.append({"titles": [ax.get_title() for ax in fig.axes], "fig": fig})
         return original_savefig(*args, **kwargs)
 
-    monkeypatch.setattr(main.plt, "savefig", recording_savefig)
+    monkeypatch.setattr(legacy_html.plt, "savefig", recording_savefig)
     return saved
 
 
