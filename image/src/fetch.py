@@ -8,6 +8,13 @@ import yfinance as yahooFinance
 # so warm invocations reuse it.
 yahooFinance.set_tz_cache_location('/tmp/py-yfinance')
 
+# yfinance creates its SQLite caches on first use without a lock, so tickers fetched
+# in parallel on a cold start can fail with "database is locked". Create them here,
+# once, before any threads start.
+from yfinance import cache as _yf_cache  # noqa: E402
+_yf_cache.get_tz_cache().lookup('SPY')
+_yf_cache.get_cookie_cache().lookup('basic')
+
 
 class InputError(Exception):
     """A problem with the request that the user can fix; the message is shown to them."""

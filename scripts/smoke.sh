@@ -25,7 +25,12 @@ run_case() {
   body=$(curl -s -m 60 -X POST "$TARGET" -H 'Content-Type: application/json' -d "$payload")
   end=$(date +%s)
   imgs=$( (grep -o "data:image/png;base64," <<<"$body" || true) | wc -l | tr -d ' ')
-  if [[ "$expect" == err:* ]]; then
+  if [[ "$expect" == json:* ]]; then
+    # json:<symbols>: a JSON body whose series are exactly these symbols (comma separated)
+    got=$(python3 -c 'import json,sys; e=json.loads(sys.stdin.read()); b=json.loads(e["body"]); print(",".join(b.get("series", {})) or b.get("error"))' <<<"$body" 2>/dev/null || echo "not JSON")
+    imgs="-"
+    if [ "$got" = "${expect#json:}" ]; then status=PASS; else status=FAIL; fail=1; body="$got"; fi
+  elif [[ "$expect" == err:* ]]; then
     if grep -q "${expect#err:}" <<<"$body"; then status=PASS; else status=FAIL; fail=1; fi
   else
     if [ "$imgs" = "$expect" ]; then status=PASS; else status=FAIL; fail=1; fi
@@ -42,5 +47,9 @@ run_case "messy input ' aapl , msft '"  '{"start_date":"2025-01-02","end_date":"
 run_case "trailing comma 'AAPL,'"      '{"start_date":"2025-01-02","end_date":"2025-06-30","symbol":"AAPL,"}' 4
 run_case "unknown ticker message"      '{"start_date":"2025-01-02","end_date":"2025-06-30","symbol":"ZZZZNOTREAL"}' "err:No data found for ZZZZNOTREAL"
 run_case "start after end message"     '{"start_date":"2025-06-30","end_date":"2025-01-02","symbol":"AAPL"}' "err:The start date must be before the end date."
+run_case "json: one ticker plus SPY"     '{"start_date":"2025-01-02","end_date":"2025-06-30","symbol":"AAPL","format":"json"}' "json:AAPL,SPY"
+run_case "json: three tickers"           '{"start_date":"2025-01-02","end_date":"2025-06-30","symbol":"msft, aapl,NVDA","format":"json"}' "json:MSFT,AAPL,NVDA,SPY"
+run_case "json: 10 tickers, 20 years"    '{"start_date":"2005-07-01","end_date":"2025-06-30","symbol":"AAPL,MSFT,NVDA,GOOG,AMZN,META,TSLA,JPM,XOM,BRK-B","format":"json"}' "json:AAPL,MSFT,NVDA,GOOG,AMZN,META,TSLA,JPM,XOM,BRK-B,SPY"
+run_case "json: unknown ticker message"  '{"start_date":"2025-01-02","end_date":"2025-06-30","symbol":"QXZQZ","format":"json"}' "json:No data found for QXZQZ between 2025-01-02 and 2025-06-30. Check the ticker symbol and the date range."
 
 exit $fail
