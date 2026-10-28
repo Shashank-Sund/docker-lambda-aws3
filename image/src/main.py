@@ -67,6 +67,7 @@ def handler(event, context):
         # Save figure as png
         img_data = io.BytesIO()
         plt.savefig(img_data, format='png')
+        plt.close()  # free the figure; warm Lambdas reuse this process
         # encodes message
         encodedsub = base64.b64encode(img_data.getvalue()).decode('utf-8')
         encoded = "<img src=\'data:image/png;base64,{}\'>".format(encodedsub)
@@ -82,6 +83,7 @@ def handler(event, context):
             # Save figure as png
             img_data2 = io.BytesIO()
             plt.savefig(img_data2, format='png')
+            plt.close()  # free the figure; warm Lambdas reuse this process
             # encodes message
             encoded2sub = base64.b64encode(img_data2.getvalue()).decode('utf-8')
             encoded2 = "<img src=\'data:image/png;base64,{}\'>".format(encoded2sub)
@@ -96,6 +98,7 @@ def handler(event, context):
         # Save figure as png
         img_data3 = io.BytesIO()
         plt.savefig(img_data3, format='png')
+        plt.close()  # free the figure; warm Lambdas reuse this process
         # encodes message
         encoded3sub = base64.b64encode(img_data3.getvalue()).decode('utf-8')
         encoded3 = "<img src=\'data:image/png;base64,{}\'>".format(encoded3sub)
@@ -109,6 +112,7 @@ def handler(event, context):
         # Save figure as png
         img_data4 = io.BytesIO()
         plt.savefig(img_data4, format='png')
+        plt.close()  # free the figure; warm Lambdas reuse this process
         # encodes message
         encoded4sub = base64.b64encode(img_data4.getvalue()).decode('utf-8')
         encoded4 = "<img src=\'data:image/png;base64,{}\'>".format(encoded4sub)
@@ -122,6 +126,7 @@ def handler(event, context):
         # Save figure as png
         img_data5 = io.BytesIO()
         plt.savefig(img_data5, format='png')
+        plt.close()  # free the figure; warm Lambdas reuse this process
         # encodes message
         encoded5sub = base64.b64encode(img_data5.getvalue()).decode('utf-8')
         encoded5 = "<img src=\'data:image/png;base64,{}\'>".format(encoded5sub)
@@ -158,6 +163,7 @@ def handler(event, context):
         # Save figure as png
         img_data7 = io.BytesIO()
         plt.savefig(img_data7, format='png')
+        plt.close()  # free the figure; warm Lambdas reuse this process
         # encodes message
         encoded7sub = base64.b64encode(img_data7.getvalue()).decode('utf-8')
         encoded7 = "<img src=\'data:image/png;base64,{}\'>".format(encoded7sub)
