@@ -205,6 +205,11 @@ resource "aws_api_gateway_gateway_response" "cors" {
   response_parameters = {
     "gatewayresponse.header.Access-Control-Allow-Origin" = local.allow_origin
   }
+  # API Gateway's default body, set explicitly: AWS fills it in when it is left out,
+  # which showed up as a change (and an API redeploy) on every plan.
+  response_templates = {
+    "application/json" = "{\"message\":$context.error.messageString}"
+  }
 }
 
 resource "aws_api_gateway_deployment" "this" {
