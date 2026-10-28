@@ -17,6 +17,7 @@ if [ -n "$(git status --porcelain -- image)" ]; then
   echo "image/ has uncommitted changes; commit first so the tag matches the code"; exit 1
 fi
 TAG="$(git rev-parse --short=12 HEAD)"
+ENV_FN="stock-eda-$ENV"
 
 terraform -chdir="$TF_DIR" init -input=false >/dev/null
 
@@ -50,10 +51,13 @@ fi
 plan_and_maybe_apply "$TAG"
 
 if [ "$MODE" = "apply" ]; then
-  API="$(terraform -chdir="$TF_DIR" output -raw api_url)"
-  # The first start after a new image fetches it uncached and can take 10+ seconds;
-  # take that hit here instead of on a visitor's request.
-  echo "== warming up $API"
-  curl -s -m 60 -o /dev/null -w "warm-up: HTTP %{http_code} in %{time_total}s\n" -X POST "$API" \
-    -H 'Content-Type: application/json' -d '{"start_date":"2025-01-02","end_date":"2025-06-30","symbol":"AAPL"}'
+  # The first start after a new image fetches it uncached and can take 25+ seconds,
+  # close to API Gateway's 29 second limit; take that hit here instead of on a
+  # visitor's request. Invoke the function directly: a new API deployment takes
+  # about a minute to reach every edge location, so a request through the API
+  # can still reach the previous function.
+  echo "== warming up $ENV_FN"
+  aws lambda invoke --function-name "$ENV_FN" --cli-read-timeout 90 --cli-binary-format raw-in-base64-out \
+    --payload '{"start_date":"2025-01-02","end_date":"2025-06-30","symbol":"AAPL"}' /dev/null \
+    --query '[StatusCode, FunctionError]' --output text | sed 's/^/warm-up: status, error = /'
 fi
