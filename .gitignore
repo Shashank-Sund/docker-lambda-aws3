@@ -10,3 +10,9 @@ cdk.out
 # Python
 __pycache__/
 .pytest_cache/
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+tfplan

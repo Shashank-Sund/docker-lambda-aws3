@@ -14,56 +14,53 @@ The tool allows for both single-stock and multi-stock analysis. The current visu
 
 # Back-End Tools
 
-AWS Tools : AWS-CDK, AWS-CLI, ECR, Cloud Formation, Lambda
+AWS Tools : Lambda (container image), API Gateway, ECR, CloudWatch Logs, Terraform
 
-Libraries: yfinance, pandas, matplotlib, plotly, seaborn, scikit-learn
+Libraries: yfinance, pandas, matplotlib, seaborn
 
-Languages: Python, Typescript
+Languages: Python, HCL
 
-Other tools: Docker
+Other tools: Docker, pytest, GitHub Actions
 
-# Setup
+# Repository layout
 
-1. Please ensure python version 3.11< is installed via anaconda
-2. Download and install Docker to your local
-3. Download and install AWS-CLI
-   - Setup AWS-CLI by creating an IAM Access Key for your AWS user account
-   - Configure CLI through 'aws configure' command
-4. Clone repo to your local
-5. Run startup.sh in local terminal
+| Path | What it is |
+|---|---|
+| `image/` | The Lambda: `src/main.py`, pinned `requirements.txt`, `Dockerfile` (Python 3.13 Lambda base, plus a `test` stage) |
+| `image/tests/` | pytest suite with fake Yahoo data (offline) and one `live` test against real Yahoo |
+| `scripts/test.sh` | Runs the tests inside the Lambda OS and packages |
+| `scripts/smoke.sh` | Runs the real image locally in the Lambda emulator (read-only filesystem, like Lambda) and sends the website's requests; with a URL argument it tests a deployed API instead |
+| `scripts/deploy.sh` | Builds the image for the current commit, pushes it to ECR, and plans or applies Terraform |
+| `terraform/bootstrap/` | One-time: the S3 bucket holding Terraform state |
+| `terraform/modules/backend/` | One environment: ECR repository, Lambda, log group, REST API |
+| `terraform/envs/staging/`, `terraform/envs/prod/` | The two environments, each with its own state |
+| `bin/`, `lib/`, `cdk.json` | The original 2023 CDK app (legacy; still running the old Lambda until it is retired) |
 
+# Test locally
 
-# Test locally in terminal
+Requires Docker.
 
-  1. cd image
-  2. docker build -t docker-image:test .
-     - builds image
-  3. docker run -p 9000:8080 docker-image:test
-     - runs image in container
-  4. Send a curl request to the url outputted from the step above
+```bash
+scripts/test.sh            # unit tests, offline
+scripts/test.sh -m live    # one test against real Yahoo Finance
+scripts/smoke.sh           # real image in the Lambda emulator, real data
+```
 
-# Deploy to AWS (in terminal)
+GitHub Actions runs the unit tests on every pull request.
 
-  1. cd docker-lambda-aws3
-  2. cdk bootstrap
-     - bootstraps environment
-  4. cdk deploy
-     - deploys resources in console
+# Deploy with Terraform
 
-# Welcome to your CDK TypeScript project
+Requires Terraform, Docker and the AWS CLI. Every resource is tagged `Project=stock-eda`, `Environment`, `Owner`, `ManagedBy=terraform`, `Repo`.
 
-This is a blank project for CDK development with TypeScript.
+```bash
+scripts/deploy.sh staging plan     # build and push the image, show the plan
+scripts/deploy.sh staging apply    # apply exactly that plan, then send a warm-up request
+scripts/smoke.sh "$(terraform -chdir=terraform/envs/staging output -raw api_url)"
+```
 
-The `cdk.json` file tells the CDK Toolkit how to execute your app.
+The image tag is the git commit, so a deploy always maps to exact code, and nothing is applied without a printed plan. The first start after a new image can take over 10 seconds while Lambda fetches it; the warm-up request absorbs that.
 
-## Useful commands
-
-* `npm run build`   compile typescript to js
-* `npm run watch`   watch for changes and compile
-* `npm run test`    perform the jest unit tests
-* `cdk deploy`      deploy this stack to your default AWS account/region
-* `cdk diff`        compare deployed stack with current state
-* `cdk synth`       emits the synthesized CloudFormation template
+Production keeps the original API URL (the website calls it directly): `terraform/envs/prod` imports that API instead of creating one. To roll production back to the 2023 Lambda, apply prod with `-var use_legacy_lambda=true`.
 
 # Sources
 
