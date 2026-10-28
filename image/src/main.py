@@ -1,7 +1,6 @@
 import numpy as np
 import datetime
 import pandas as pd
-from sklearn.preprocessing import StandardScaler
 import matplotlib.pyplot as plt
 import seaborn as sns
 import plotly.express as px
@@ -57,10 +56,9 @@ def handler(event, context):
     iqr = q3 - q1
     upper_bound = q3 + 1.5 * iqr
     df = df[df['Close'] <= upper_bound]
-    
-    # # fits data using scaler
-    scaler = StandardScaler()
-    df[['Open', 'High', 'Low', 'Close', 'Volume']] = scaler.fit_transform(df[['Open', 'High', 'Low', 'Close', 'Volume']]) 
+
+    # Charts use real prices. (Standardizing them made the axes read as z-scores
+    # while labeled as prices; the correlation heatmap is unaffected by scaling.)
 
     if len(symbol) == 1: # USED FOR SINGLE-STOCK ANALYSIS
 
