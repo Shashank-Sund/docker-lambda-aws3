@@ -10,7 +10,7 @@ Requests without `format` get the original HTML page, unchanged.
 ```
 
 - `start_date`, `end_date`: `YYYY-MM-DD` (slashes also accepted). `end_date` is exclusive, as in yfinance.
-- `symbol`: comma-separated tickers; trimmed, uppercased, duplicates dropped. At most 10.
+- `symbol`: comma-separated tickers; trimmed, uppercased, duplicates dropped. At most 10, not counting SPY.
 - The range can be at most 20 years.
 
 ## Envelope
@@ -141,7 +141,9 @@ If the user enters SPY, it appears once in `series` and in `tickers`; `benchmark
 ### Numbers
 
 - Returns and ratios are fractions (0.0123 = 1.23%), rounded to 6 decimals; prices to 4.
-- Any value that cannot be computed (too few days, flat prices) is `null`, never NaN.
+- Any value that cannot be computed (too few days, flat prices) is `null`, never NaN. This includes the
+  `best_day`, `worst_day`, `high` and `low` objects, which are `null` when there are no returns or prices.
+- `seasonality.by_month` only counts full months, so a range shorter than a full calendar month has none.
 - Statistics need at least 2 daily returns; with fewer they are `null`.
 
 ### Size

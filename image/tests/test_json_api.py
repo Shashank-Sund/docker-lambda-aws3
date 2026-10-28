@@ -94,6 +94,14 @@ def test_input_errors_come_back_as_json(fake_yahoo, start, end, symbol, message)
     assert body(response)["error"].startswith(message)
 
 
+def test_spy_does_not_count_toward_the_ticker_limit(fake_yahoo, monkeypatch):
+    names = ["T%d" % i for i in range(10)]
+    for n in names:
+        monkeypatch.setitem(fake_yahoo.prices, n, (10.0, 20.0))
+    data = body(ask("2025-01-02", "2025-06-30", ",".join(names + ["SPY"])))
+    assert data["tickers"] == names + ["SPY"] and len(data["series"]) == 11
+
+
 def test_exactly_twenty_years_is_allowed(fake_yahoo):
     assert ask("2005-06-30", "2025-06-30", "AAPL")["statusCode"] == 200
 

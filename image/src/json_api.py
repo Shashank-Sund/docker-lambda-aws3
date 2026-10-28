@@ -49,7 +49,7 @@ def _benchmark(start, end):
 
 def build(event):
     start, end, symbols = fetch.parse_request(event)
-    if len(symbols) > MAX_TICKERS:
+    if len([s for s in symbols if s != BENCHMARK]) > MAX_TICKERS:  # SPY is the benchmark; it never counts
         raise InputError("Enter at most {} tickers.".format(MAX_TICKERS))
     if end > start + pd.DateOffset(years=MAX_YEARS):
         raise InputError("The date range can be at most {} years.".format(MAX_YEARS))
