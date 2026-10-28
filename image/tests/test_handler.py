@@ -167,3 +167,18 @@ def test_unexpected_failures_return_a_generic_message(fake_yahoo, monkeypatch):
     monkeypatch.setattr(fake_yahoo, "history", boom)
     response = invoke("2025-01-02", "2025-06-30", "AAPL")
     assert error_text(response).startswith("Something went wrong while building the charts.")
+
+
+def test_each_chart_carries_its_title_as_alt_text(fake_yahoo):
+    import re
+
+    single = invoke("2023-01-03", "2025-06-30", "AAPL")["body"]
+    assert re.findall(r"alt='([^']*)'", single) == [
+        "Closing Stock Price Over Time",
+        "Correlation Between Stock Prices",
+        "Distribution of Closing Stock Price",
+        "Daily Returns",
+        "Closing Stock Prices by Year",
+    ]
+    multi = invoke("2025-01-02", "2025-06-30", "AAPL,MSFT")["body"]
+    assert re.findall(r"alt='([^']*)'", multi) == ["Closing Stock Price of Multiple Companies Over Time"]

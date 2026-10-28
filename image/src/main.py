@@ -112,7 +112,7 @@ def analyze(event):
         plt.close()  # free the figure; warm Lambdas reuse this process
         # encodes message
         encodedsub = base64.b64encode(img_data.getvalue()).decode('utf-8')
-        encoded = "<img src=\'data:image/png;base64,{}\'>".format(encodedsub)
+        encoded = "<img src=\'data:image/png;base64,{}\' alt=\'Closing Stock Price Over Time\'>".format(encodedsub)
 
         if startyear != endyear:
             # Box plot of Closing Stock Prices by Year'
@@ -128,7 +128,7 @@ def analyze(event):
             plt.close()  # free the figure; warm Lambdas reuse this process
             # encodes message
             encoded2sub = base64.b64encode(img_data2.getvalue()).decode('utf-8')
-            encoded2 = "<img src=\'data:image/png;base64,{}\'>".format(encoded2sub)
+            encoded2 = "<img src=\'data:image/png;base64,{}\' alt=\'Closing Stock Prices by Year\'>".format(encoded2sub)
         else:
             encoded2 = "<br>"
 
@@ -143,7 +143,7 @@ def analyze(event):
         plt.close()  # free the figure; warm Lambdas reuse this process
         # encodes message
         encoded3sub = base64.b64encode(img_data3.getvalue()).decode('utf-8')
-        encoded3 = "<img src=\'data:image/png;base64,{}\'>".format(encoded3sub)
+        encoded3 = "<img src=\'data:image/png;base64,{}\' alt=\'Correlation Between Stock Prices\'>".format(encoded3sub)
 
         # Distribution of Closing Stock Price
         plt.figure(figsize=(10, 6))
@@ -157,7 +157,7 @@ def analyze(event):
         plt.close()  # free the figure; warm Lambdas reuse this process
         # encodes message
         encoded4sub = base64.b64encode(img_data4.getvalue()).decode('utf-8')
-        encoded4 = "<img src=\'data:image/png;base64,{}\'>".format(encoded4sub)
+        encoded4 = "<img src=\'data:image/png;base64,{}\' alt=\'Distribution of Closing Stock Price\'>".format(encoded4sub)
 
         # Create a histogram of the daily returns
         plt.figure(figsize=(12,6))
@@ -171,7 +171,7 @@ def analyze(event):
         plt.close()  # free the figure; warm Lambdas reuse this process
         # encodes message
         encoded5sub = base64.b64encode(img_data5.getvalue()).decode('utf-8')
-        encoded5 = "<img src=\'data:image/png;base64,{}\'>".format(encoded5sub)
+        encoded5 = "<img src=\'data:image/png;base64,{}\' alt=\'Daily Returns\'>".format(encoded5sub)
 
         html = """ <!DOCTYPE html>
     <html lang="en">
@@ -208,7 +208,7 @@ def analyze(event):
         plt.close()  # free the figure; warm Lambdas reuse this process
         # encodes message
         encoded7sub = base64.b64encode(img_data7.getvalue()).decode('utf-8')
-        encoded7 = "<img src=\'data:image/png;base64,{}\'>".format(encoded7sub)
+        encoded7 = "<img src=\'data:image/png;base64,{}\' alt=\'Closing Stock Price of Multiple Companies Over Time\'>".format(encoded7sub)
 
         html = """ <!DOCTYPE html>
     <html lang="en">
