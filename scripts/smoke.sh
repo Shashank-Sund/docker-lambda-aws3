@@ -10,7 +10,8 @@ TARGET="${1:-}"
 if [ -z "$TARGET" ]; then
   docker build --quiet -t stock-eda:local image >/dev/null
   docker rm -f stock-eda-smoke >/dev/null 2>&1 || true
-  docker run -d --name stock-eda-smoke -p 9000:8080 stock-eda:local >/dev/null
+  # Read-only filesystem except /tmp, as on Lambda
+  docker run -d --name stock-eda-smoke --read-only --tmpfs /tmp -p 9000:8080 stock-eda:local >/dev/null
   trap 'docker rm -f stock-eda-smoke >/dev/null 2>&1 || true' EXIT
   sleep 2
   TARGET="http://localhost:9000/2015-03-31/functions/function/invocations"

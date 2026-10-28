@@ -2,6 +2,10 @@
 # install directly (the 3.11 base is Amazon Linux 2, which forced source builds).
 FROM public.ecr.aws/lambda/python:3.13 AS runtime
 
+# Lambda's filesystem is read-only except /tmp. Without this, matplotlib warns and
+# creates a new temporary config directory on every cold start.
+ENV MPLCONFIGDIR=/tmp/matplotlib
+
 # Copy requirements.txt
 COPY requirements.txt ${LAMBDA_TASK_ROOT}
 
