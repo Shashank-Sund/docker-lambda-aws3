@@ -49,3 +49,27 @@ def test_daily_returns_are_real_percentage_changes(fake_yahoo, charts):
     returns = next(c for c in charts if "Daily Returns" in c["titles"])
     lo, hi = returns["fig"].axes[0].get_xlim()
     assert -0.2 < lo < 0 < hi < 0.2
+
+
+def test_comparison_keeps_high_priced_tickers(fake_yahoo, charts):
+    # BRK-A trades around 400,000 to 600,000, the others under 400, so BRK-A is
+    # only a fifth of the rows and sits far above the combined upper quartile.
+    invoke("2025-01-02", "2025-06-30", "AAPL,MSFT,GOOG,NVDA,BRK-A")
+    points = {line.get_label(): len(line.get_ydata()) for line in charts[0]["fig"].axes[0].lines}
+    for ticker in ["AAPL", "MSFT", "GOOG", "NVDA", "BRK-A"]:
+        assert points.get(ticker, 0) > 100, f"{ticker} has no plotted prices"
+
+
+def test_single_ticker_keeps_a_sharp_run_up(fake_yahoo, charts, monkeypatch):
+    # A stock that triples in the final weeks: those closes are real data, not outliers.
+    original = fake_yahoo.history
+
+    def run_up(self, start, end):
+        df = original(self, start, end)
+        df.loc[df.index[-15:], "Close"] *= 3
+        return df
+
+    monkeypatch.setattr(fake_yahoo, "history", run_up)
+    invoke("2025-01-02", "2025-06-30", "AAPL")
+    closing = next(c for c in charts if "Closing Stock Price Over Time" in c["titles"])
+    assert max(closing["fig"].axes[0].lines[0].get_ydata()) > 700

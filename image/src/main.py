@@ -50,12 +50,8 @@ def handler(event, context):
     # Rename columns
     df.rename(columns={'open': 'Open', 'high': 'High', 'low': 'Low', 'close': 'Close', 'volume': 'Volume', 'trade_count': 'Trade_count', 'vwap': 'Vwap', 'date': 'Date', 'symbol': 'Symbol',}, inplace=True)
     
-    # Handle outliers
-    q1 = df['Close'].quantile(0.25)
-    q3 = df['Close'].quantile(0.75)
-    iqr = q3 - q1
-    upper_bound = q3 + 1.5 * iqr
-    df = df[df['Close'] <= upper_bound]
+    # No outlier filter on Close: market closes are real data. (An IQR cut over
+    # all tickers combined dropped run-ups and whole high-priced tickers.)
 
     # Charts use real prices. (Standardizing them made the axes read as z-scores
     # while labeled as prices; the correlation heatmap is unaffected by scaling.)
