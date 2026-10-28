@@ -1,0 +1,60 @@
+{
+    "Version": "2012-10-17",
+    "Id": "default",
+    "Statement": [
+        {
+            "Sid": "DockerLambdaAws3Stack-DockerFuncinvokefunctionurlB084CBAE-q3JUZSRoUvef",
+            "Effect": "Allow",
+            "Principal": "*",
+            "Action": "lambda:InvokeFunctionUrl",
+            "Resource": "arn:aws:lambda:us-east-1:733538815818:function:DockerLambdaAws3Stack-DockerFuncF47DA747-nR1zghniM75a",
+            "Condition": {
+                "StringEquals": {
+                    "lambda:FunctionUrlAuthType": "NONE"
+                }
+            }
+        },
+        {
+            "Sid": "2595f787-9a35-4ee3-a17c-68063c5efbe9",
+            "Effect": "Allow",
+            "Principal": {
+                "Service": "apigateway.amazonaws.com"
+            },
+            "Action": "lambda:InvokeFunction",
+            "Resource": "arn:aws:lambda:us-east-1:733538815818:function:DockerLambdaAws3Stack-DockerFuncF47DA747-nR1zghniM75a",
+            "Condition": {
+                "ArnLike": {
+                    "AWS:SourceArn": "arn:aws:execute-api:us-east-1:733538815818:h0xgcd3ab1/*/POST/"
+                }
+            }
+        },
+        {
+            "Sid": "8fc23cfd-8276-41a8-9fc8-4365f30d0d5e",
+            "Effect": "Allow",
+            "Principal": {
+                "Service": "apigateway.amazonaws.com"
+            },
+            "Action": "lambda:InvokeFunction",
+            "Resource": "arn:aws:lambda:us-east-1:733538815818:function:DockerLambdaAws3Stack-DockerFuncF47DA747-nR1zghniM75a",
+            "Condition": {
+                "ArnLike": {
+                    "AWS:SourceArn": "arn:aws:execute-api:us-east-1:733538815818:orddbsxa1a/*/POST/"
+                }
+            }
+        },
+        {
+            "Sid": "771a14d7-84c2-4f28-841d-ffc448626fb1",
+            "Effect": "Allow",
+            "Principal": {
+                "Service": "apigateway.amazonaws.com"
+            },
+            "Action": "lambda:InvokeFunction",
+            "Resource": "arn:aws:lambda:us-east-1:733538815818:function:DockerLambdaAws3Stack-DockerFuncF47DA747-nR1zghniM75a",
+            "Condition": {
+                "ArnLike": {
+                    "AWS:SourceArn": "arn:aws:execute-api:us-east-1:733538815818:mgpqvaaqhh/*/POST/"
+                }
+            }
+        }
+    ]
+}
