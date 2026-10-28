@@ -1,17 +1,19 @@
-import numpy as np
 import datetime
 import pandas as pd
+import matplotlib
+matplotlib.use('Agg')  # non-interactive backend: renders to PNG only, faster import
 import matplotlib.pyplot as plt
 import seaborn as sns
-import plotly.express as px
-import json
-import boto3
 import io
 import base64
 import re
 import yfinance as yahooFinance
 import html as html_lib
 import traceback
+
+# Lambda's filesystem is read-only except /tmp; keep yfinance's timezone cache there
+# so warm invocations reuse it.
+yahooFinance.set_tz_cache_location('/tmp/py-yfinance')
 
 
 class InputError(Exception):
