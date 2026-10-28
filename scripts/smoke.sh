@@ -23,7 +23,7 @@ run_case() {
   start=$(date +%s)
   body=$(curl -s -m 60 -X POST "$TARGET" -H 'Content-Type: application/json' -d "$payload")
   end=$(date +%s)
-  imgs=$(grep -o "data:image/png;base64," <<<"$body" | wc -l | tr -d ' ')
+  imgs=$( (grep -o "data:image/png;base64," <<<"$body" || true) | wc -l | tr -d ' ')
   if [[ "$expect" == err:* ]]; then
     if grep -q "${expect#err:}" <<<"$body"; then status=PASS; else status=FAIL; fail=1; fi
   else
@@ -39,5 +39,7 @@ run_case "multiple tickers"          '{"start_date":"2025-01-02","end_date":"202
 run_case "lowercase ticker"          '{"start_date":"2025-01-02","end_date":"2025-06-30","symbol":"msft"}' 4
 run_case "messy input ' aapl , msft '"  '{"start_date":"2025-01-02","end_date":"2025-06-30","symbol":" aapl , msft "}' 1
 run_case "trailing comma 'AAPL,'"      '{"start_date":"2025-01-02","end_date":"2025-06-30","symbol":"AAPL,"}' 4
+run_case "unknown ticker message"      '{"start_date":"2025-01-02","end_date":"2025-06-30","symbol":"ZZZZNOTREAL"}' "err:No data found for ZZZZNOTREAL"
+run_case "start after end message"     '{"start_date":"2025-06-30","end_date":"2025-01-02","symbol":"AAPL"}' "err:The start date must be before the end date."
 
 exit $fail

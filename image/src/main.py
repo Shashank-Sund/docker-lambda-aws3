@@ -10,22 +10,55 @@ import io
 import base64
 import re
 import yfinance as yahooFinance
+import html as html_lib
+import traceback
+
+
+class InputError(Exception):
+    """A problem with the request that the user can fix; the message is shown to them."""
+
+
+def error_response(message):
+    # Same envelope and HTML document shape as the charts, so the website shows the
+    # message in its response box. Single-quoted attribute: the body is JSON-encoded.
+    body = "<!DOCTYPE html><html lang='en'><head><meta charset='UTF-8'><title>Error</title></head>" \
+           "<body><div class='eda-error' role='alert'>{}</div></body></html>".format(html_lib.escape(message))
+    return {'statusCode': 200, 'body': body, 'headers': {'Content-Type': 'text/html'}}
+
 
 def handler(event, context):
+    try:
+        return analyze(event)
+    except InputError as e:
+        return error_response(str(e))
+    except Exception:
+        traceback.print_exc()  # full detail goes to CloudWatch Logs
+        return error_response("Something went wrong while building the charts. Please try again, or try a different date range.")
+
+
+def analyze(event):
 
     # gets in variables from event
-    start_date = event['start_date']
-    end_date = event['end_date']
+    start_date = str(event.get('start_date') or '').strip()
+    end_date = str(event.get('end_date') or '').strip()
     # trims, uppercases, drops empty entries and duplicates (keeps input order)
-    symbol = list(dict.fromkeys(s.strip().upper() for s in event['symbol'].split(',') if s.strip()))
+    symbol = list(dict.fromkeys(s.strip().upper() for s in str(event.get('symbol') or '').split(',') if s.strip()))
+
+    if not start_date or not end_date or not symbol:
+        raise InputError("Please enter a start date, an end date and at least one ticker.")
 
     # separates the year, month, and day for both the start and end dates
     pattern = r'[/-]'
-    startyear,startmonth,startday = int(re.split(pattern, start_date)[0]), int(re.split(pattern, start_date)[1]), int(re.split(pattern, start_date)[2])
-    endyear,endmonth,endday = int(re.split(pattern, end_date)[0]), int(re.split(pattern, end_date)[1]), int(re.split(pattern, end_date)[2])
+    try:
+        startyear,startmonth,startday = [int(part) for part in re.split(pattern, start_date)]
+        endyear,endmonth,endday = [int(part) for part in re.split(pattern, end_date)]
+        startDate = datetime.datetime(startyear, startmonth, startday)
+        endDate = datetime.datetime(endyear, endmonth, endday)
+    except ValueError:
+        raise InputError("Dates must be in YYYY-MM-DD format.")
 
-    startDate = datetime.datetime(startyear, startmonth, startday) # startDate , as per our convenience we can modify
-    endDate = datetime.datetime(endyear, endmonth, endday) # endDate , as per our convenience we can modify
+    if startDate >= endDate:
+        raise InputError("The start date must be before the end date.")
 
     def get_data(symbols, start, end):
 
@@ -46,8 +79,14 @@ def handler(event, context):
 
         return df_list
 
-    df = pd.concat(get_data(symbol, startDate, endDate)) # concat all data together from method
-    
+    df_list = get_data(symbol, startDate, endDate)
+    missing = [s for s, d in zip(symbol, df_list) if d.empty]
+    if missing:
+        raise InputError("No data found for {} between {} and {}. Check the ticker symbol and the date range.".format(
+            ', '.join(missing), startDate.date(), endDate.date()))
+
+    df = pd.concat(df_list) # concat all data together from method
+
     # Rename columns
     df.rename(columns={'open': 'Open', 'high': 'High', 'low': 'Low', 'close': 'Close', 'volume': 'Volume', 'trade_count': 'Trade_count', 'vwap': 'Vwap', 'date': 'Date', 'symbol': 'Symbol',}, inplace=True)
     

@@ -55,7 +55,7 @@ class FakeTicker:
 
     def history(self, start, end):
         if self.symbol not in self.prices:
-            return make_history(start, start)  # empty, same columns
+            return make_history(start, end).iloc[0:0]  # no rows, same columns (what yfinance returns)
         first, last = self.prices[self.symbol]
         return make_history(start, end, first, last)
 
