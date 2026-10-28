@@ -37,5 +37,7 @@ run_case "single ticker, one year"  '{"start_date":"2025-01-02","end_date":"2025
 run_case "single ticker, multi year" '{"start_date":"2023-01-03","end_date":"2025-06-30","symbol":"AAPL"}' 5
 run_case "multiple tickers"          '{"start_date":"2025-01-02","end_date":"2025-06-30","symbol":"AAPL,MSFT,GOOG"}' 1
 run_case "lowercase ticker"          '{"start_date":"2025-01-02","end_date":"2025-06-30","symbol":"msft"}' 4
+run_case "messy input ' aapl , msft '"  '{"start_date":"2025-01-02","end_date":"2025-06-30","symbol":" aapl , msft "}' 1
+run_case "trailing comma 'AAPL,'"      '{"start_date":"2025-01-02","end_date":"2025-06-30","symbol":"AAPL,"}' 4
 
 exit $fail

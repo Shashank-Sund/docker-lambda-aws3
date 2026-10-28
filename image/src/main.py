@@ -16,7 +16,8 @@ def handler(event, context):
     # gets in variables from event
     start_date = event['start_date']
     end_date = event['end_date']
-    symbol = event['symbol'].split(',')
+    # trims, uppercases, drops empty entries and duplicates (keeps input order)
+    symbol = list(dict.fromkeys(s.strip().upper() for s in event['symbol'].split(',') if s.strip()))
 
     # separates the year, month, and day for both the start and end dates
     pattern = r'[/-]'
